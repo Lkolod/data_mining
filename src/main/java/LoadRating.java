@@ -58,7 +58,10 @@ public class LoadRating {
         System.out.println("Dataframe's schema:");
         df2.printSchema();
         plot_stats_ym(df_stats_ym,"Liczba ocen w kolejnych miesiacach","ratings");
+
     }
+
+
     static void plot_stats_ym(Dataset<Row> df, String title, String label) {
         var labels = df.select(concat(col("year"), lit("-"), col("month"))).as(Encoders.STRING()).collectAsList();
         var x = NumpyUtils.arange(0, labels.size() - 1, 1);
