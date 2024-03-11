@@ -1,9 +1,12 @@
-import org.apache.spark.sql.Dataset;
-import org.apache.spark.sql.Row;
-import org.apache.spark.sql.SparkSession;
+import com.github.sh0nk.matplotlib4j.Plot;
+import com.github.sh0nk.matplotlib4j.PythonExecutionException;
+import org.apache.spark.sql.*;
 import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
+
+import java.io.IOException;
+import java.util.List;
 
 import static org.apache.spark.sql.functions.*;
 
@@ -78,11 +81,41 @@ public class MoviesRatings {
                         max("rating").alias("max_rating"),
                         count("rating").alias("rating_cnt")
                 ).orderBy(col("rating_cnt").desc());
-        aggregatedDF.show();
 
 
+        var avgRatings = aggregatedDF.select("avg_rating").where("rating_cnt>=0").as(Encoders.DOUBLE()).collectAsList();
+        //plot_histogram(avgRatings, "Średnie wartosci ocen");
+        var avgRatings2 = aggregatedDF.select("rating_cnt").where("avg_rating>=4.5").as(Encoders.DOUBLE()).collectAsList();
+        //plot_histogram(avgRatings2, "Średnie wartosci ocen rating average >= 4.5");
 
-        //Dataset<Row> grouped_mr = df_mr.groupBy("title",).agg(count("columnNameToAggregate"));
+        var avgRatings3 = aggregatedDF
+                .select("rating_cnt")
+                .where("rating_cnt >= 20")
+                .where("avg_rating >= 3.5")
+                .as(Encoders.DOUBLE()).collectAsList();
+        //plot_histogram(avgRatings3, "Średnie wartosci ocen rating average >= 4.5");
+        //df_mr.show();
+
+        var df_release_rating = df_mr
+                .withColumn("year", functions.from_unixtime(df.col("timestamp")));
+        var splited_datetime = split(df_release_rating.col("datetime"),"-");
+
+        df_release_ratingn.withColumn("rating_year", splited_datetime.getItem(0))
+                .withColumn("release_to_rating_year");
+
+    }
+
+    static void plot_histogram(List<Double> x, String title) {
+        Plot plt = Plot.create();
+        plt.hist().add(x).bins(50);
+        plt.title(title);
+        try {
+            plt.show();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (PythonExecutionException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }
