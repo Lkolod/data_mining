@@ -15,6 +15,7 @@ public class MoviesRatings {
     public static void main(String[] args) {
         SparkSession spark = SparkSession.builder()
                 .appName("Load movies")
+                .appName("Downsampling")
                 .master("local")
                 .getOrCreate();
         System.out.println("Using Apache Spark v" + spark.version());
@@ -73,7 +74,7 @@ public class MoviesRatings {
                 .load("data/ratings.csv");
 
 
-        var df_mr = df_movies.join(df_ratings,"movieId","inner");
+        var df_mr = df_movies.join(df_ratings,df_movies.col("movieId").equalTo(df_ratings.col("movieId")));
         Dataset<Row> aggregatedDF = df_mr.groupBy("title")
                 .agg(
                         min("rating").alias("min_rating"),
@@ -94,15 +95,21 @@ public class MoviesRatings {
                 .where("avg_rating >= 3.5")
                 .as(Encoders.DOUBLE()).collectAsList();
         //plot_histogram(avgRatings3, "Średnie wartosci ocen rating average >= 4.5");
-        //df_mr.show();
+
 
         var df_release_rating = df_mr
-                .withColumn("year", functions.from_unixtime(df.col("timestamp")));
-        var splited_datetime = split(df_release_rating.col("datetime"),"-");
+                .withColumn("datetime", functions.from_unixtime(df_mr.col("timestamp")))
+                .drop("timestamp")
+                .withColumn("rating_year", regexp_extract(col("datetime"), "(\\d{4})", 1))
+                .withColumn("release_to_rating_year", expr("rating_year - year"))
+                .drop("rating_year");
 
-        df_release_ratingn.withColumn("rating_year", splited_datetime.getItem(0))
-                .withColumn("release_to_rating_year");
 
+        var avgRatings4 = df_release_rating.select("release_to_rating_year").as(Encoders.DOUBLE()).collectAsList();
+        plot_histogram(avgRatings4, "Rozkład różnicy lat pomiędzy oceną a wydaniem filmu");
+
+
+        df_release_rating.show();
     }
 
     static void plot_histogram(List<Double> x, String title) {
