@@ -1,9 +1,11 @@
 import com.github.sh0nk.matplotlib4j.Plot;
+import com.github.sh0nk.matplotlib4j.PythonConfig;
 import com.github.sh0nk.matplotlib4j.PythonExecutionException;
 import org.apache.spark.sql.*;
 import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
+
 
 import java.io.IOException;
 import java.util.List;
@@ -104,16 +106,24 @@ public class MoviesRatings {
                 .withColumn("release_to_rating_year", expr("rating_year - year"))
                 .drop("rating_year");
 
+        var downsampling_df = df_release_rating.sample(0.005);
+        var avgRatings4 = downsampling_df.select("release_to_rating_year").as(Encoders.DOUBLE()).collectAsList();
+        plot_histogram(avgRatings4, "Rozklad roznicy lat pomiedzy ocena a wydaniem filmu");
+       //df_release_rating.show();
 
-        var avgRatings4 = df_release_rating.select("release_to_rating_year").as(Encoders.DOUBLE()).collectAsList();
-        plot_histogram(avgRatings4, "Rozkład różnicy lat pomiędzy oceną a wydaniem filmu");
 
+        var df_rating_Grouped = df_release_rating.groupBy("release_to_rating_year")
+                .agg(count("release_to_rating_year").alias("count"));
+        df_rating_Grouped = df_rating_Grouped.orderBy(col("release_to_rating_year").asc());
+        //df_rating_Grouped.show();
 
-        df_release_rating.show();
+        var df_mr2 = df_rating_Grouped.filter("release_to_rating_year=-1 OR release_to_rating_year IS NULL");
+        df_mr2.show(105);
+
     }
 
     static void plot_histogram(List<Double> x, String title) {
-        Plot plt = Plot.create();
+        Plot plt = Plot.create(PythonConfig.pythonBinPathConfig("C:\\Users\\kolod\\anaconda3\\envs\\pythonProject1\\python.exe"));
         plt.hist().add(x).bins(50);
         plt.title(title);
         try {
@@ -124,7 +134,6 @@ public class MoviesRatings {
             throw new RuntimeException(e);
         }
     }
-
 }
 
 
