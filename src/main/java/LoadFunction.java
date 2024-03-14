@@ -81,7 +81,7 @@ public class LoadFunction {
 
 
         var summarry = trainingSummary.objectiveHistory();
-        summarry.cast(D);
+        //summarry.cast(D);
     }
     static void plotObjectiveHistory(List<Double> lossHistory){
         var x = IntStream.range(0,lossHistory.size()).mapToDouble(d->d).boxed().toList();
