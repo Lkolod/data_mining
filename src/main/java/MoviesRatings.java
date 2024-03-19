@@ -24,6 +24,27 @@ public class MoviesRatings {
         Dataset<Row> dfMR = preprocessMovies(dfMovies);
         Dataset<Row> aggregatedDF = aggregateRatings(dfMR, dfRatings);
 
+        // task 4.7.1
+        var df_movie_rating_g = MoviesRatingsGenres(dfMR,dfRatings);
+        //df_movie_rating_g.show();
+
+        // task 4.7.2
+        var genre_min_max = genre_group(df_movie_rating_g);
+        //genre_min_max.show();
+
+        // task 4.7.3
+        Dataset<Row> topRows_genre_avg = genre_min_max.orderBy(desc("avg_rating")).limit(3);
+        //topRows_genre_avg.show();
+        Dataset<Row> topRows_genre_cnt = genre_min_max.orderBy(desc("rating_cnt")).limit(3);
+        //topRows_genre_cnt.show();
+        //task 4.7.4
+        genre_min_max.createOrReplaceTempView("movies_ratings");
+        dfRatings.createOrReplaceTempView("ratings");
+
+        // Zapytanie SQL
+
+
+
         List<Double> avgRatings = getAverageRatings(aggregatedDF);
         //plotHistogram(avgRatings, "Average Ratings Distribution");
 
@@ -47,10 +68,29 @@ public class MoviesRatings {
         List<Double> realease_rating_count = dfMR2.select("count").as(Encoders.DOUBLE())
                 .collectAsList();
 
-        dfMR2.show();
-        plot_histogram2(release_to_rating_values,realease_rating_count,"rozklad roznicy lat pomiedzy ocena a wydaniem filmu");
+        //dfMR2.show();
+        //plot_histogram2(release_to_rating_values,realease_rating_count,"rozklad roznicy lat pomiedzy ocena a wydaniem filmu");
     }
+    static Dataset<Row> genre_group(Dataset<Row> dfMoviesRating) {
 
+        return dfMoviesRating.groupBy("genre")
+                .agg(
+                        min("rating").alias("min_rating"),
+                        avg("rating").alias("avg_rating"),
+                        max("rating").alias("max_rating"),
+                        count("rating").alias("rating_cnt")
+                ).orderBy(col("rating_cnt").desc());
+    }
+    static Dataset<Row> MoviesRatingsGenres(Dataset<Row> dfMovies, Dataset<Row> dfRatings) {
+        Dataset<Row> dfMR = dfMovies.join(dfRatings, dfMovies.col("movieId").equalTo(dfRatings.col("movieId")));
+        return dfMR.withColumn("genres_array", split(dfMR.col("genres"), "\\|"))
+                .withColumn("genre", explode(col("genres_array")))
+                .drop("genres_array")
+                .drop("genres")
+                .withColumn("datetime", functions.from_unixtime(dfMR.col("timestamp")))
+                .drop("timestamp");
+
+    }
     static Dataset<Row> loadMoviesDataset(SparkSession spark, String path) {
         StructType schema = DataTypes.createStructType(new StructField[]{
                 DataTypes.createStructField("MovieId", DataTypes.IntegerType, true),
