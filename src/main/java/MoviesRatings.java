@@ -5,10 +5,8 @@ import org.apache.spark.sql.*;
 import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
-
 import java.io.IOException;
 import java.util.List;
-
 import static org.apache.spark.sql.functions.*;
 
 public class MoviesRatings {
@@ -21,11 +19,13 @@ public class MoviesRatings {
 
         Dataset<Row> dfMovies = loadMoviesDataset(spark, "data/movies.csv");
         Dataset<Row> dfRatings = loadRatingsDataset(spark, "data/ratings.csv");
+        Dataset<Row> dfUsers = LoadUsers(spark, "data/users.csv");
+        Dataset<Row> dfTags = LoadTag(spark, "data/tags.csv");
         Dataset<Row> dfMR = preprocessMovies(dfMovies);
         Dataset<Row> aggregatedDF = aggregateRatings(dfMR, dfRatings);
 
         // task 4.7.1
-        var df_movie_rating_g = MoviesRatingsGenres(dfMR,dfRatings);
+        var df_movie_rating_g = MoviesRatingsGenres(dfMR, dfRatings);
         //df_movie_rating_g.show();
 
         // task 4.7.2
@@ -38,12 +38,6 @@ public class MoviesRatings {
         Dataset<Row> topRows_genre_cnt = genre_min_max.orderBy(desc("rating_cnt")).limit(3);
         //topRows_genre_cnt.show();
         //task 4.7.4
-        genre_min_max.createOrReplaceTempView("movies_ratings");
-        dfRatings.createOrReplaceTempView("ratings");
-
-        // Zapytanie SQL
-
-
 
         List<Double> avgRatings = getAverageRatings(aggregatedDF);
         //plotHistogram(avgRatings, "Average Ratings Distribution");
@@ -70,6 +64,47 @@ public class MoviesRatings {
 
         //dfMR2.show();
         //plot_histogram2(release_to_rating_values,realease_rating_count,"rozklad roznicy lat pomiedzy ocena a wydaniem filmu");
+
+        df_movie_rating_g.createOrReplaceTempView("movie_ratings");
+        dfRatings.createOrReplaceTempView("ratings");
+
+
+        String query = """
+           SELECT genre, AVG(rating) AS avg_rating, COUNT(rating) 
+           FROM movie_ratings GROUP BY genre 
+           HAVING AVG(rating) > (SELECT AVG(rating) FROM ratings) 
+           ORDER BY avg_rating DESC""";
+        var df_cat_above_avg = spark.sql(query);
+        //df_cat_above_avg.show();
+
+        dfUsers.createOrReplaceTempView("users");
+        dfTags.createOrReplaceTempView("tags");
+
+        String query2 = """
+            SELECT *
+            FROM users u
+            JOIN tags t ON u.userId = t.userId""";
+
+        Dataset<Row> df_ut = spark.sql(query2);
+        //df_ut.show();
+
+        Dataset<Row> grouped_df_ut = df_ut.groupBy("email")
+                .agg(concat_ws(" ", collect_list(col("tag"))).alias("tag_list"));
+
+        //grouped_df_ut.show();
+        //List<Row> tagRows = grouped_df_ut.select("tag_list").collectAsList();
+        //for (Row row : tagRows) {
+        //    String tagList = row.getString(0); // Assuming tag_list is stored as a string
+        //    System.out.println(tagList);
+        //}
+        Dataset<Row> Df_ur = dfUsers.join(dfRatings,dfUsers.col("userId").equalTo(dfRatings.col("userId")));
+        Dataset<Row> grouped_df_ur = Df_ur.groupBy("email")
+                .agg(avg("rating").alias("avg_rating"), count("rating").alias("count"))
+                .orderBy(col("avg_rating").desc());
+
+        //grouped_df_ur.show();
+        plot_scatter_df_ur(grouped_df_ur,"Number of ratings vs. average rating");
+
     }
     static Dataset<Row> genre_group(Dataset<Row> dfMoviesRating) {
 
@@ -96,6 +131,34 @@ public class MoviesRatings {
                 DataTypes.createStructField("MovieId", DataTypes.IntegerType, true),
                 DataTypes.createStructField("title", DataTypes.StringType, false),
                 DataTypes.createStructField("genres", DataTypes.StringType, false),
+        });
+
+        return spark.read()
+                .format("csv")
+                .option("header", "true")
+                .schema(schema)
+                .load(path);
+    }
+    static Dataset<Row> LoadUsers(SparkSession spark, String path) {
+        StructType schema = DataTypes.createStructType(new StructField[]{
+                DataTypes.createStructField("userId", DataTypes.IntegerType, true),
+                DataTypes.createStructField("foreName", DataTypes.StringType, false),
+                DataTypes.createStructField("surName", DataTypes.StringType, false),
+                DataTypes.createStructField("email", DataTypes.StringType, false),
+        });
+
+        return spark.read()
+                .format("csv")
+                .option("header", "true")
+                .schema(schema)
+                .load(path);
+    }
+    static Dataset<Row> LoadTag(SparkSession spark, String path) {
+        StructType schema = DataTypes.createStructType(new StructField[]{
+                DataTypes.createStructField("userId", DataTypes.IntegerType, true),
+                DataTypes.createStructField("movieId", DataTypes.StringType, false),
+                DataTypes.createStructField("tag", DataTypes.StringType, false),
+                DataTypes.createStructField("timestamp", DataTypes.StringType, false),
         });
 
         return spark.read()
@@ -195,6 +258,22 @@ public class MoviesRatings {
         Plot plt = Plot.create(PythonConfig.pythonBinPathConfig("C:\\Users\\kolod\\anaconda3\\envs\\pythonProject1\\python.exe"));
         plt.hist().add(x).weights(weights).bins(50);
         plt.title(title);
+        try {
+            plt.show();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (PythonExecutionException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    static void plot_scatter_df_ur(Dataset<Row> df, String title) {
+        Plot plt = Plot.create(PythonConfig.pythonBinPathConfig("C:\\Users\\kolod\\anaconda3\\envs\\pythonProject1\\python.exe"));
+        List<Double> x = df.select("avg_rating").as(Encoders.DOUBLE()).collectAsList();
+        List<Double> y = df.select("count").as(Encoders.DOUBLE()).collectAsList();
+        plt.plot().add(x, y,"o");
+        plt.title(title);
+        plt.xlabel("Average rating by user");
+        plt.ylabel("Number of ratings by user");
         try {
             plt.show();
         } catch (IOException e) {

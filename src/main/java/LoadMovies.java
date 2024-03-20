@@ -38,22 +38,34 @@ public class LoadMovies {
                 .schema(schema)
                 .load("data/movies.csv");
 
+        //df.show(5);
+        //df.printSchema();
+
         var df2 = df
                 .withColumn("title2", regexp_extract(df.col("title"), "^(.+)\\((\\d{4})\\)$", 1))
                 .withColumn("year", regexp_extract(df.col("title"), "^(.+)\\((\\d{4})\\)$", 2))
                 .drop("title")
                 .withColumnRenamed("title2", "title");
 
+        //df2.show(5);
+        //df2.printSchema();
+
         var df_transformed = df2
                 .withColumn("genres_array", split(df.col("genres"), "\\|"));
+
+        //df_transformed.show(5);
+        //df_transformed.printSchema();
 
         var df_exploded = df2
                 .withColumn("genres_array", split(df.col("genres"), "\\|"))
                 .withColumn("genre", explode(col("genres_array")))
                 .drop("genres_array")
                 .drop("genres");
+        //df_exploded.show(5);
+        //df_exploded.printSchema();
 
-        df_exploded.select("genre").distinct().show();
+
+        //df_exploded.select("genre").distinct().show(false);
 
         var genreList = df_exploded.select("genre").distinct().as(Encoders.STRING()).collectAsList();
 
@@ -62,10 +74,10 @@ public class LoadMovies {
             if (s.equals("(no genres listed)")) continue;
             df_multigenre = df_multigenre.withColumn(s, array_contains(col("genres_array"), s));
         }
-        System.out.println("Excerpt of the dataframe content:");
-        df_exploded.show(20);
-        System.out.println("Dataframe's schema:");
-        df_exploded.printSchema();
+        //System.out.println("Excerpt of the dataframe content:");
+        //df_exploded.show(20);
+        //System.out.println("Dataframe's schema:");
+        //df_exploded.printSchema();
 
     }
 
