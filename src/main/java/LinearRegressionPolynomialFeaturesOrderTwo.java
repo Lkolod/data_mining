@@ -80,20 +80,5 @@ public class LinearRegressionPolynomialFeaturesOrderTwo {
         System.out.println("Using Apache Spark v" + spark.version());
     }
 
-    static void plot(List<Double> x,List<Double> y, LinearRegressionModel lrModel, String title, Function<Double,Double> f_true) {
-        Plot plt = Plot.create();
 
-        plt.plot().add(x, y,"o").label("data");
-        var xmax = min(x);
-        var xmin = max(y);
-        var xdelta = 0.05*(xmax-xmin);
-
-        var fx = NumpyUtils.linspace(xmin-xdelta,xmax+xdelta,100);
-        fx= fx.toarray();
-        List<double> fy = lrModel.predict(fx);
-        plt.plot().add(fx, fy).color("r").label("pred");
-        plt.plot().add(fx, fy_true).color("g").linestyle("--").label("$f_{true}$");
-
-
-        }
     }

@@ -14,9 +14,9 @@ import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class LoadFunction {
@@ -27,7 +27,7 @@ public class LoadFunction {
                 .getOrCreate();
         System.out.println("Using Apache Spark v" + spark.version());
 
-        StructType schema = DataTypes.createStructType(new StructField[] {
+        StructType schema = DataTypes.createStructType(new StructField[]{
                 DataTypes.createStructField(
                         "X",
                         DataTypes.DoubleType,
@@ -36,7 +36,7 @@ public class LoadFunction {
                         "Y",
                         DataTypes.DoubleType,
                         true),
-                  });
+        });
 
         Dataset<Row> df = spark.read()
                 .format("csv")
@@ -80,8 +80,11 @@ public class LoadFunction {
         System.out.println("r2: " + trainingSummary.r2());
 
 
-        var summarry = trainingSummary.objectiveHistory();
-        //summarry.cast(D);
+        var summary = Arrays.stream(trainingSummary.objectiveHistory())
+                .boxed()
+                .collect(Collectors.toList());
+
+        plotObjectiveHistory(summary);
     }
     static void plotObjectiveHistory(List<Double> lossHistory){
         var x = IntStream.range(0,lossHistory.size()).mapToDouble(d->d).boxed().toList();
