@@ -48,6 +48,7 @@ public class LoadFunction {
                 .option("header", "true")
                 .schema(schema)
                 .load("data/xy-001.csv");
+        //df.show(5);
 
         Dataset<Row> df_2 = spark.read()
                 .format("csv")
@@ -77,7 +78,7 @@ public class LoadFunction {
         Dataset<Row> df_transformed_4 = assembler.transform(df_4);
 
         //task 1 end
-        //df_transformed.show();
+        //df_transformed.show(5);
 
         //task 1.2
         //task 1.2.1
@@ -86,7 +87,7 @@ public class LoadFunction {
                 .setMaxIter(10)
                 //10,20,50,100 here change it
                 .setRegParam(0.3)
-                //.setRegParam(0.0)
+                //.setRegParam(100.00)
                 // numIterations: 0 if (0.0)
                 .setElasticNetParam(0.8)
                 //.setElasticNetParam(0.0)
@@ -107,7 +108,7 @@ public class LoadFunction {
         LinearRegressionTrainingSummary trainingSummary = lrModel.summary();
         System.out.println("numIterations: " + trainingSummary.totalIterations());
         System.out.println("objectiveHistory: " + Vectors.dense(trainingSummary.objectiveHistory()));
-        trainingSummary.residuals().show(100);
+        //trainingSummary.residuals().show(5);
         System.out.println("MSE: " + trainingSummary.meanSquaredError());
         System.out.println("RMSE: " + trainingSummary.rootMeanSquaredError());
         System.out.println("MAE: " + trainingSummary.meanAbsoluteError());
@@ -146,12 +147,12 @@ public class LoadFunction {
         Function<Double, Double> xy3 = x -> -1.5 * x*x + 3*x+4;
         Function<Double, Double> xy4 = x -> -10 * x*x + 500*x-25;
 
-        plot(X,Y,lrModel,"linear regression",xy1);
+        //plot(X,Y,lrModel,"linear regression",xy1);
 
         //task 2.1
-        //plot(X2,Y2,lrModel_2,"linear regression",xy2);
-        //plot(X3,Y3,lrModel_3,"linear regression",xy3);
-        //plot(X4,Y4,lrModel_4,"linear regression",xy4);
+        plot(X2,Y2,lrModel_2,"linear regression",xy2);
+        plot(X3,Y3,lrModel_3,"linear regression",xy3);
+        plot(X4,Y4,lrModel_4,"linear regression",xy4);
         //task 2.2
         LinearRegressionTrainingSummary trainingSummary_2 = lrModel_2.summary();
         LinearRegressionTrainingSummary trainingSummary_3 = lrModel_3.summary();
