@@ -25,8 +25,8 @@ import java.util.stream.IntStream;
 
 import static org.apache.spark.sql.functions.*;
 
-public class LinearRegressionPolynomialFeaturesOrderTwo {
-    static void processDataset_2nd_order(SparkSession spark, String filename, Function<Double,Double> f_true, int order){
+public class LinearRegressionPolynomialFeaturesOrderThree {
+    static void processDataset_3nd_order(SparkSession spark, String filename, Function<Double,Double> f_true, int order){
 
         StructType schema = DataTypes.createStructType(new StructField[] {
                 DataTypes.createStructField(
@@ -45,14 +45,15 @@ public class LinearRegressionPolynomialFeaturesOrderTwo {
                 .schema(schema)
                 .load(filename);
 
-        var df_x2 = df.withColumn("X2",expr("X * X"));
+        var df_x2 = df.withColumn("X2",expr("X * X")).withColumn("X3",expr("X * X * X"));
 
         VectorAssembler assembler = new VectorAssembler()
-                .setInputCols(new String[]{"X", "X2"})
+                .setInputCols(new String[]{"X", "X2","X3"})
                 .setOutputCol("features");
 
         Dataset<Row> df_transformed = assembler.transform(df_x2);
         //df_transformed.show(5)
+
         LinearRegression lr = new LinearRegression()
                 .setMaxIter(10)
                 .setRegParam(0.3)
@@ -131,11 +132,10 @@ public class LinearRegressionPolynomialFeaturesOrderTwo {
         Function<Double, Double> xy3 = x -> -1.5 * x*x + 3*x+4;
         Function<Double, Double> xy4 = x -> -10 * x*x + 500*x-25;
         Function<Double, Double> xy5 = x -> (x + 4) * (x + 1) * (x - 3);
-        //processDataset_2nd_order(spark,"data/xy-002.csv",xy2,2);
-        //processDataset_2nd_order(spark,"data/xy-003.csv",xy3,2);
-        //processDataset_2nd_order(spark,"data/xy-004.csv",xy4,2);
-        //processDataset_2nd_order(spark,"data/xy-005.csv",xy5,2);
+        //processDataset_3nd_order(spark,"data/xy-002.csv",xy2,3);
+        //processDataset_3nd_order(spark,"data/xy-003.csv",xy3,3);
+        //processDataset_3nd_order(spark,"data/xy-004.csv",xy4,3);
+        //processDataset_3nd_order(spark,"data/xy-005.csv",xy5,3);
 
-        //TO DO 1.6
     }
-    }
+}
