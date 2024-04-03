@@ -78,6 +78,7 @@ public class LinearRegressionPolynomialFeaturesOrderTwo {
                 .master("local")
                 .getOrCreate();
         System.out.println("Using Apache Spark v" + spark.version());
+        var cos =1;
     }
 
 
