@@ -81,7 +81,9 @@ public class LinearRegressionPolynomialFeaturesOrderTwo {
         plot(X,Y,lrModel,"linear regression",f_true,order);
     }
     static void plot(List<Double> x, List<Double> y, LinearRegressionModel lrModel, String title, Function<Double, Double> f_true,int order) {
-        Plot plt = Plot.create(PythonConfig.pythonBinPathConfig("C:\\Users\\kolod\\anaconda3\\envs\\pythonProject1\\python.exe"));
+        //Plot plt = Plot.create(PythonConfig.pythonBinPathConfig("C:\\Users\\kolod\\anaconda3\\envs\\pythonProject1\\python.exe"));
+        Plot plt = Plot.create();
+
         plt.plot().add(x, y,"o").label("data");
         double xmin = Collections.min(x);
         double xmax = Collections.max(x);
@@ -134,7 +136,7 @@ public class LinearRegressionPolynomialFeaturesOrderTwo {
         //processDataset_2nd_order(spark,"data/xy-002.csv",xy2,2);
         //processDataset_2nd_order(spark,"data/xy-003.csv",xy3,2);
         //processDataset_2nd_order(spark,"data/xy-004.csv",xy4,2);
-        //processDataset_2nd_order(spark,"data/xy-005.csv",xy5,2);
+        processDataset_2nd_order(spark,"data/xy-005.csv",xy5,2);
 
         //TO DO 1.6
     }
