@@ -62,7 +62,7 @@ public class LinearRegressionPolynomialFeaturesPipeline {
             //df_transformed = polyExpansion.transform(df_transformed);
 
             LinearRegression lr = new LinearRegression()
-                    .setMaxIter(10)
+                    .setMaxIter(100)
                     .setRegParam(0.3)
                     .setElasticNetParam(0.8)
                     .setFeaturesCol("polyFeatures")
@@ -94,7 +94,8 @@ public class LinearRegressionPolynomialFeaturesPipeline {
 
 
         static void plot(List<Double>x, List<Double> y, PipelineModel pipelineModel, SparkSession spark, String title, Function<Double,Double> f_true) {
-            Plot plt = Plot.create(PythonConfig.pythonBinPathConfig("C:\\Users\\kolod\\anaconda3\\envs\\pythonProject1\\python.exe"));
+            //Plot plt = Plot.create(PythonConfig.pythonBinPathConfig("C:\\Users\\kolod\\anaconda3\\envs\\pythonProject1\\python.exe"));
+            Plot plt = Plot.create();
             plt.plot().add(x, y, "o").label("data");
             double xmin = Collections.min(x);
             double xmax = Collections.max(x);
