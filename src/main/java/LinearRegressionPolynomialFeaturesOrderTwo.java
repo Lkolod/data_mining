@@ -46,6 +46,8 @@ public class LinearRegressionPolynomialFeaturesOrderTwo {
                 .load(filename);
 
         var df_x2 = df.withColumn("X2",expr("X * X"));
+        df_x2.show(5);
+        df_x2.printSchema();
 
         VectorAssembler assembler = new VectorAssembler()
                 .setInputCols(new String[]{"X", "X2"})
@@ -68,7 +70,7 @@ public class LinearRegressionPolynomialFeaturesOrderTwo {
         LinearRegressionTrainingSummary trainingSummary = lrModel.summary();
         System.out.println("numIterations: " + trainingSummary.totalIterations());
         System.out.println("objectiveHistory: " + Vectors.dense(trainingSummary.objectiveHistory()));
-        trainingSummary.residuals().show(100);
+        trainingSummary.residuals().show(5);
         System.out.println("MSE: " + trainingSummary.meanSquaredError());
         System.out.println("RMSE: " + trainingSummary.rootMeanSquaredError());
         System.out.println("MAE: " + trainingSummary.meanAbsoluteError());
@@ -78,7 +80,7 @@ public class LinearRegressionPolynomialFeaturesOrderTwo {
                 .collectAsList();
         List<Double> Y = df_transformed.select("Y").as(Encoders.DOUBLE())
                 .collectAsList();
-        plot(X,Y,lrModel,"linear regression",f_true,order);
+        //plot(X,Y,lrModel,"linear regression xy-004",f_true,order);
     }
     static void plot(List<Double> x, List<Double> y, LinearRegressionModel lrModel, String title, Function<Double, Double> f_true,int order) {
         //Plot plt = Plot.create(PythonConfig.pythonBinPathConfig("C:\\Users\\kolod\\anaconda3\\envs\\pythonProject1\\python.exe"));

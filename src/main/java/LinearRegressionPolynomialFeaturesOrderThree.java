@@ -55,7 +55,7 @@ public class LinearRegressionPolynomialFeaturesOrderThree {
         //df_transformed.show(5)
 
         LinearRegression lr = new LinearRegression()
-                .setMaxIter(10)
+                .setMaxIter(100)
                 .setRegParam(0.3)
                 .setElasticNetParam(0.8)
                 .setFeaturesCol("features")
@@ -79,10 +79,11 @@ public class LinearRegressionPolynomialFeaturesOrderThree {
                 .collectAsList();
         List<Double> Y = df_transformed.select("Y").as(Encoders.DOUBLE())
                 .collectAsList();
-        plot(X,Y,lrModel,"linear regression",f_true,order);
+        plot(X,Y,lrModel,"linear regression xy-005",f_true,order);
     }
     static void plot(List<Double> x, List<Double> y, LinearRegressionModel lrModel, String title, Function<Double, Double> f_true,int order) {
-        Plot plt = Plot.create(PythonConfig.pythonBinPathConfig("C:\\Users\\kolod\\anaconda3\\envs\\pythonProject1\\python.exe"));
+        //Plot plt = Plot.create(PythonConfig.pythonBinPathConfig("C:\\Users\\kolod\\anaconda3\\envs\\pythonProject1\\python.exe"));
+        Plot plt = Plot.create();
         plt.plot().add(x, y,"o").label("data");
         double xmin = Collections.min(x);
         double xmax = Collections.max(x);
@@ -132,10 +133,11 @@ public class LinearRegressionPolynomialFeaturesOrderThree {
         Function<Double, Double> xy3 = x -> -1.5 * x*x + 3*x+4;
         Function<Double, Double> xy4 = x -> -10 * x*x + 500*x-25;
         Function<Double, Double> xy5 = x -> (x + 4) * (x + 1) * (x - 3);
+
         //processDataset_3nd_order(spark,"data/xy-002.csv",xy2,3);
         //processDataset_3nd_order(spark,"data/xy-003.csv",xy3,3);
         //processDataset_3nd_order(spark,"data/xy-004.csv",xy4,3);
-        //processDataset_3nd_order(spark,"data/xy-005.csv",xy5,3);
+        processDataset_3nd_order(spark,"data/xy-005.csv",xy5,3);
 
     }
 }

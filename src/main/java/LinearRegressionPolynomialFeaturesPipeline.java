@@ -48,20 +48,17 @@ public class LinearRegressionPolynomialFeaturesPipeline {
                     .schema(schema)
                     .load(filename);
 
-//            long rowsCount = df.count();
-//            int trainCount = (int)(rowsCount*.7);
-//            var df_train = df.select("*").limit(trainCount);
-//            var df_test = df.select("*").offset(trainCount);
-            //System.out.println(df_train.count());
-            //System.out.println(df_test.count());
-
-            //var df_x2 = df.withColumn("X2", expr("X * X")).withColumn("X3", expr("X * X * X"));
-            //4.2.3
             df = df.orderBy(org.apache.spark.sql.functions.rand(3));
+            long rowsCount = df.count();
+            int trainCount = (int)(rowsCount*.7);
+            var df_train = df.select("*").limit(trainCount);
+            var df_test = df.select("*").offset(trainCount);
+            System.out.println(df_train.count());
+            System.out.println(df_test.count());
 
-            var dfs = df.randomSplit(new double[]{0.7,0.3}, 3);
-            var df_train = dfs[0];
-            var df_test = dfs[1];
+//            var dfs = df.randomSplit(new double[]{0.7,0.3}, 3);
+//            var df_train = dfs[0];
+//            var df_test = dfs[1];
 
             VectorAssembler vectorAssembler = new VectorAssembler()
                     .setInputCols(new String[]{"X"})
@@ -117,8 +114,11 @@ public class LinearRegressionPolynomialFeaturesPipeline {
             List<Double> Y = df_train.select("Y").as(Encoders.DOUBLE())
                     .collectAsList();
 
-            plot(X, Y, model, spark, "Linear regression: %s (test data)", f_true);
+            plot(X, Y, model, spark, String.format("Linear regression: %s (train data)",filename), f_true);
             //plot(X, Y, model, spark, "regresion", f_true);
+            var x = df_test.select("X").as(Encoders.DOUBLE()).collectAsList();
+            var y = df_test.select("Y").as(Encoders.DOUBLE()).collectAsList();
+            plot(x,y,model,spark,String.format("Linear regression: %s (test data)",filename),f_true);
         }
 
         static void plot(List<Double>x, List<Double> y, PipelineModel pipelineModel, SparkSession spark, String title, Function<Double,Double> f_true) {
@@ -140,8 +140,8 @@ public class LinearRegressionPolynomialFeaturesPipeline {
             //df_test.show(5);
             //df_test.printSchema();
             Dataset<Row> df_pred = pipelineModel.transform(df_test);
-            //df_pred.show(5);
-            //df_pred.printSchema();
+            df_pred.show(5);
+            df_pred.printSchema();
             List<Double> f_x = df_pred.select("X").as(Encoders.DOUBLE()).collectAsList();
             List<Double> f_y = df_pred.select("prediction").as(Encoders.DOUBLE()).collectAsList();
             plt.plot().add(f_x, f_y).color("r").label("pred");
@@ -180,7 +180,7 @@ public class LinearRegressionPolynomialFeaturesPipeline {
             //processDataset_3nd_order(spark,"data/xy-002.csv",xy2,3);
             //processDataset_3nd_order(spark,"data/xy-003.csv",xy3,3);
             //processDataset_3nd_order(spark,"data/xy-004.csv",xy4,3);
-            processDataset(spark,"data/xy-005.csv",xy5,2);
+            processDataset(spark,"data/xy-003.csv",xy3,3);
 
         }
 }
