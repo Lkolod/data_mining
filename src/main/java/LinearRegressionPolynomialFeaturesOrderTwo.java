@@ -74,7 +74,7 @@ public class LinearRegressionPolynomialFeaturesOrderTwo {
     }
     public static void main(String[] args) {
         SparkSession spark = SparkSession.builder()
-                .appName("LoadFunction")
+                .appName("Lab1.LoadFunction")
                 .master("local")
                 .getOrCreate();
         System.out.println("Using Apache Spark v" + spark.version());
