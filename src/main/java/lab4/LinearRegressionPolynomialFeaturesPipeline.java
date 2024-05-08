@@ -169,7 +169,7 @@ public class LinearRegressionPolynomialFeaturesPipeline {
 
         public static void main(String[] args) {
             SparkSession spark = SparkSession.builder()
-                    .appName("LoadFunction")
+                    .appName("lab3.LoadFunction")
                     .master("local")
                     .getOrCreate();
             System.out.println("Using Apache Spark v" + spark.version());
