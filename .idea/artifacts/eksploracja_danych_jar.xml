@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="eksploracja-danych:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/eksploracja_danych_jar</output-path>
+    <root id="archive" name="eksploracja-danych.jar">
+      <element id="module-output" name="eksploracja-danych" />
+    </root>
+  </artifact>
+</component>
