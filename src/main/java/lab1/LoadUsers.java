@@ -1,4 +1,4 @@
-package lab1;
+package Lab1;
 
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
@@ -10,7 +10,7 @@ import org.apache.spark.sql.types.StructType;
 public class LoadUsers {
     public static void main(String[] args) {
         SparkSession spark = SparkSession.builder()
-                .appName("LoadUsers")
+                .appName("Lab1.LoadUsers")
                 .master("local")
                 .getOrCreate();
         System.out.println("Using Apache Spark v" + spark.version());

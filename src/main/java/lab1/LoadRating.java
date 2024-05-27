@@ -1,3 +1,5 @@
+package Lab1;
+
 import com.github.sh0nk.matplotlib4j.NumpyUtils;
 import com.github.sh0nk.matplotlib4j.Plot;
 import com.github.sh0nk.matplotlib4j.PythonExecutionException;
@@ -13,7 +15,7 @@ import static org.apache.spark.sql.functions.*;
 public class LoadRating {
     public static void main(String[] args) {
         SparkSession spark = SparkSession.builder()
-                .appName("LoadRating")
+                .appName("Lab1.LoadRating")
                 .master("local")
                 .getOrCreate();
         System.out.println("Using Apache Spark v" + spark.version());

@@ -1,4 +1,4 @@
-package lab1;
+package Lab1;
 
 import com.github.sh0nk.matplotlib4j.Plot;
 import com.github.sh0nk.matplotlib4j.PythonConfig;
